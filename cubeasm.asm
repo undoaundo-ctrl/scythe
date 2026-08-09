@@ -46,15 +46,40 @@ section .text
     global _start
 
 _start:
-    mov byte [angle_idx], 0
-
 .main_loop:
     ; 1. Clear screen and home cursor
     mov rax, 1          ; sys_write
     mov rdi, 1          ; stdout
-    mov rsi, cls_seq
+    lea rsi, [rel cls_seq]  ; FIX: Added 'rel' for 64-bit compatibility
     mov rdx, cls_len
     syscall
+
+    ; 2. Initialize Frame Buffer with blank spaces and newlines
+    lea rdi, [rel frame_buf] ; FIX: Added 'rel' for 64-bit compatibility
+    mov rcx, SCREEN_H
+.init_rows:
+    push rcx
+    mov rcx, SCREEN_W
+    mov al, ' '
+    rep stosb
+    mov al, 10          ; '\n'
+    stosb
+    pop rcx
+    loop .init_rows
+
+    ; 3. Calculate Rotation Sine & Cosine Values
+    movzx rbx, byte [rel angle_idx]
+    lea rcx, [rel sin_table]         ; FIX: Load base address into 64-bit register
+    movzx rbx, word [rcx + rbx*2]    ; FIX: Explicit word pointer array index lookup
+    
+    movzx rdx, byte [rel angle_idx]
+    add rdx, 2
+    and rdx, 7
+    lea rcx, [rel sin_table]         ; FIX: Load base address into 64-bit register
+    movzx rdx, word [rcx + rdx*2]    ; FIX: Explicit word pointer array index lookup
+
+
+    
 
     ; 2. Initialize Frame Buffer with blank spaces and newlines
     mov rdi, frame_buf
