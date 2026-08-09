@@ -127,7 +127,8 @@ _start:
 
     ; Screen Y = CenterY + (Y' * Distance) / Z'
     mov rax, r9
-    cqomov rbx, 20
+    cqo
+    mov rbx, 20
     imul rbx
     idiv r12
     add rax, 11         ; Center Y
